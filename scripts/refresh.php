@@ -4,29 +4,22 @@ require('wampserver.lib.php');
 // ************************ 
 //   gestion de la langue
 // on recupere la langue courante
-if(isset($wampConf['language'])) {
-	$lang = $wampConf['language'];
-} else {
-	$lang = $wampConf['defaultLanguage'];
-}
+
+$lang = isset($wampConf['language']) ? $wampConf['language'] : $wampConf['defaultLanguage'];
+
 // on inclus le fichier correspondant
 if(is_file($langDir.$lang.'.lang')) {
 	require($langDir.$lang.'.lang');
 } else {
 	require($langDir.$wampConf['defaultLanguage'].'lang');
 }
-// on inclus les fichiers de langue de modules par defaut
 if($handle = opendir($langDir.$modulesDir)) {
 	while(FALSE !== ($file = readdir($handle))) {
+		// on inclus les fichiers de langue de modules par defaut
 		if($file != "." && $file != ".." && preg_match('|_'.$wampConf['defaultLanguage'].'|', $file)) {
 			include($langDir.$modulesDir.$file);
 		}
-	}
-	closedir($handle);
-}
-// on inclus les fichiers de langue de modules correspondant � la langue courante
-if($handle = opendir($langDir.$modulesDir)) {
-	while(FALSE !== ($file = readdir($handle))) {
+		// on inclus les fichiers de langue de modules correspondant � la langue courante
 		if($file != "." && $file != ".." && preg_match('|_'.$lang.'|', $file)) {
 			include($langDir.$modulesDir.$file);
 		}
@@ -49,11 +42,7 @@ if($wampConf['status'] == 'online') {
 if($handle = opendir($langDir)) {
 	while(FALSE !== ($file = readdir($handle))) {
 		if($file != "." && $file != ".." && preg_match('|\.lang|', $file)) {
-			if($file == $lang.'.lang') {
-				$langList[$file] = 1;
-			} else {
-				$langList[$file] = 0;
-			}
+			$langList[$file] = (int)$file == $lang.'.lang';
 		}
 	}
 	closedir($handle);
@@ -73,8 +62,8 @@ foreach($langList as $langname => $langstatus) {
 foreach($langList as $langname => $langstatus) {
 	$cleanLangName = str_replace('.lang', '', $langname);
 	$langText .= '[lang_'.$cleanLangName.']
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . changeLanguage.php '.$cleanLangName.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/changeLanguage.php '.$cleanLangName.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
 
@@ -124,20 +113,10 @@ foreach($ext as $extname => $extstatus) {
 ';
 }
 foreach($ext as $extname => $extstatus) {
-	if($ext[$extname] == 1)
-		$extText .= '[php_ext_'.$extname.']
+	$extText .= '[php_ext_'.$extname.']
 Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . switchPhpExt.php '.$extname.' off";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices;
-Action: readconfig;
-';
-	else
-		$extText .= '[php_ext_'.$extname.']
-Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . switchPhpExt.php '.$extname.' on";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/switchPhpExt.php '.$extname.' '.(($ext[$extname] == 1) ? 'off' : 'on').'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
@@ -171,20 +150,10 @@ foreach($params_for_wampini as $paramname => $paramstatus) {
 //Type: submenu; Caption: "'.$w_phpExtensions.'"; SubMenu: php_ext;  Glyph: 3
 //';
 foreach($params_for_wampini as $paramname => $paramstatus) {
-	if($params_for_wampini[$paramname] == 1)
-		$phpConfText .= '['.$phpParams[$paramname].']
+	$phpConfText .= '['.$phpParams[$paramname].']
 Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchPhpParam.php '.$phpParams[$paramname].' off";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig;
-';
-	else
-		$phpConfText .= '['.$phpParams[$paramname].']
-Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchPhpParam.php '.$phpParams[$paramname].' on";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/switchPhpParam.php '.$phpParams[$paramname].' '.(($params_for_wampini[$paramname] == 1) ? 'off' : 'on').'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
@@ -216,20 +185,11 @@ foreach($mod as $modname => $modstatus) {
 ';
 }
 foreach($mod as $modname => $modstatus) {
-	if($mod[$modname] == 1)
-		$httpdText .= '[apache_mod_'.$modname.']
+
+	$httpdText .= '[apache_mod_'.$modname.']
 Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchApacheMod.php '.$modname.' on";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig;
-';
-	else
-		$httpdText .= '[apache_mod_'.$modname.']
-Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchApacheMod.php '.$modname.' off";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/switchApacheMod.php '.$modname.' '.(($mod[$modname] == 1) ? 'on' : 'off').'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
@@ -248,14 +208,11 @@ if($handle = opendir($aliasDir)) {
 }
 $myreplace = $myreplacemenu = $mydeletemenu = '';
 foreach($aliasDirContents as $one_alias) {
-	$mypattern    = ';WAMPADDALIAS';
-	$newalias_dir = str_replace('.conf', '', $one_alias);
+	$mypattern      = ';WAMPADDALIAS';
+	$newalias_dir   = str_replace('.conf', '', $one_alias);
 	$alias_contents = @file_get_contents($aliasDir.$one_alias);
 	preg_match('|^Alias /'.$newalias_dir.'/ "(.+)"|', $alias_contents, $match);
-	if(isset($match[1]))
-		$newalias_dest = $match[1];
-	else
-		$newalias_dest = NULL;
+	$newalias_dest = isset($match[1]) ? $match[1] : NULL;
 	$myreplace .= 'Type: submenu; Caption: "http://localhost/'.$newalias_dir.'/"; SubMenu: alias_'.str_replace(' ', '_', $newalias_dir).'; Glyph: 3
 ';
 	$myreplacemenu .= '
@@ -268,8 +225,8 @@ Type: item; Caption: "Delete alias"; Glyph: 6; Action: multi; Actions: delete_'.
 	$mydeletemenu .= '
 [delete_'.str_replace(' ', '_', $newalias_dir).']
 Action: service; Service: wampapache; ServiceAction: stop; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpExe.'";Parameters: "-c . deleteAlias.php '.str_replace(' ', '-whitespace-', $newalias_dir).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpExe.'";Parameters: "-c . '.$c_installDir.'/scripts/deleteAlias.php '.str_replace(' ', '-whitespace-', $newalias_dir).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
@@ -282,16 +239,15 @@ $tpl = str_replace($mypattern, $myreplace.$myreplacemenu.$mydeletemenu, $tpl);
 // ************************
 // versions de PHP
 $phpVersionList = listDir($c_phpVersionDir, 'checkPhpConf');
-$myPattern     = ';WAMPPHPVERSIONSTART';
-$myreplace     = $myPattern."
+$myPattern      = ';WAMPPHPVERSIONSTART';
+$myreplace      = $myPattern."
 ";
-$myreplacemenu = '';
+$myreplacemenu  = '';
 foreach($phpVersionList as $onePhp) {
 	$phpGlyph      = '';
 	$onePhpVersion = str_ireplace('php', '', $onePhp);
 	//on verifie si le PHP est compatible avec la version d'apache courante
-	if(isset($phpConf))
-		$phpConf = NULL;
+	isset($phpConf) && $phpConf = NULL;
 	include $c_phpVersionDir.'/php'.$onePhpVersion.'/'.$wampBinConfFiles;
 	$apacheVersionTemp = $wampConf['apacheVersion'];
 	while(!isset($phpConf['apache'][$apacheVersionTemp]) && $apacheVersionTemp != '') {
@@ -311,8 +267,8 @@ foreach($phpVersionList as $onePhp) {
 	if($incompatiblePhp == 0) {
 		$myreplacemenu .= '[switchPhp'.$onePhpVersion.']
 Action: service; Service: wampapache; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchPhpVersion.php '.$onePhpVersion.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/switchPhpVersion.php '.$onePhpVersion.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
@@ -330,16 +286,15 @@ $tpl = str_replace($myPattern, $myreplace.$myreplacemenu, $tpl);
 // ************************
 // versions de Apache
 $apacheVersionList = listDir($c_apacheVersionDir, 'checkApacheConf');
-$myPattern     = ';WAMPAPACHEVERSIONSTART';
-$myreplace     = $myPattern."
+$myPattern         = ';WAMPAPACHEVERSIONSTART';
+$myreplace         = $myPattern."
 ";
-$myreplacemenu = '';
+$myreplacemenu     = '';
 foreach($apacheVersionList as $oneApache) {
 	$apacheGlyph      = '';
 	$oneApacheVersion = str_ireplace('apache', '', $oneApache);
 	//on verifie si le apache est compatible avec la version d'apache courante
-	if(isset($phpConf))
-		$phpConf = NULL;
+	isset($phpConf) && $phpConf = NULL;
 	include $c_phpVersionDir.'/php'.$wampConf['phpVersion'].'/'.$wampBinConfFiles;
 	$apacheVersionTemp = $oneApacheVersion;
 	while(!isset($phpConf['apache'][$apacheVersionTemp]) && $apacheVersionTemp != '') {
@@ -352,8 +307,7 @@ foreach($apacheVersionList as $oneApache) {
 		$incompatibleApache = 1;
 		$apacheGlyph        = '; Glyph: 19';
 	}
-	if(isset($apacheConf))
-		$apacheConf = NULL;
+	isset($apacheConf) && $apacheConf = NULL;
 	include $c_apacheVersionDir.'/apache'.$oneApacheVersion.'/'.$wampBinConfFiles;
 	if($oneApacheVersion === $wampConf['apacheVersion'])
 		$apacheGlyph = '; Glyph: 13';
@@ -364,17 +318,17 @@ foreach($apacheVersionList as $oneApache) {
 Action: service; Service: wampapache; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "'.$c_apacheExe.'"; Parameters: "'.$c_apacheServiceRemoveParams.'"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: closeservices; Flags: ignoreerrors
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchApacheVersion.php '.$oneApacheVersion.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchPhpVersion.php '.$wampConf['phpVersion'].'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/switchApacheVersion.php '.$oneApacheVersion.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/switchPhpVersion.php '.$wampConf['phpVersion'].'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "'.$c_apacheVersionDir.'/apache'.$oneApacheVersion.'/'.$apacheConf['apacheExeDir'].'/'.$apacheConf['apacheExeFile'].'"; Parameters: "'.$apacheConf['apacheServiceInstallParams'].'"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampapache"; ShowCmd: hidden; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig;
 ';
 	} else {
 		$myreplacemenu .= '[switchApache'.$oneApacheVersion.']
-Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 2";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpExe.'";Parameters: "'.$c_installDir.'/scripts/msg.php 2";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';
 	}
 }
@@ -385,29 +339,24 @@ $tpl = str_replace($myPattern, $myreplace.$myreplacemenu, $tpl);
 // ************************
 // versions de MySQL
 $mysqlVersionList = listDir($c_mysqlVersionDir, 'checkMysqlConf');
-$myPattern     = ';WAMPMYSQLVERSIONSTART';
-$myreplace     = $myPattern."
+$myPattern        = ';WAMPMYSQLVERSIONSTART';
+$myreplace        = $myPattern."
 ";
-$myreplacemenu = '';
+$myreplacemenu    = '';
 foreach($mysqlVersionList as $oneMysql) {
 	$oneMysqlVersion = str_ireplace('mysql', '', $oneMysql);
-	if(isset($mysqlConf))
-		$mysqlConf = NULL;
+	isset($mysqlConf) && $mysqlConf = NULL;
 	include $c_mysqlVersionDir.'/mysql'.$oneMysqlVersion.'/'.$wampBinConfFiles;
-	if($oneMysqlVersion === $wampConf['mysqlVersion'])
-		$myreplace .= 'Type: item; Caption: "'.$oneMysqlVersion.'"; Action: multi; Actions:switchMysql'.$oneMysqlVersion.'; Glyph: 13
-';
-	else
-		$myreplace .= 'Type: item; Caption: "'.$oneMysqlVersion.'"; Action: multi; Actions:switchMysql'.$oneMysqlVersion.'
+	$myreplace .= 'Type: item; Caption: "'.$oneMysqlVersion.'";	Action: multi; Actions:switchMysql'.$oneMysqlVersion.(($oneMysqlVersion === $wampConf['mysqlVersion']) ? '; Glyph: 13' : '').'
 ';
 	$myreplacemenu .= '[switchMysql'.$oneMysqlVersion.']
 Action: service; Service: wampmysqld; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "'.$c_mysqlExe.'"; Parameters: "'.$c_mysqlServiceRemoveParams.'"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: closeservices;
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "switchMysqlVersion.php '.$oneMysqlVersion.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated 
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "'.$c_installDir.'/scripts/switchMysqlVersion.php '.$oneMysqlVersion.'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: run; FileName: "'.$c_mysqlVersionDir.'/mysql'.$oneMysqlVersion.'/'.$mysqlConf['mysqlExeDir'].'/'.$mysqlConf['mysqlExeFile'].'"; Parameters: "'.$mysqlConf['mysqlServiceInstallParams'].'"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "net"; Parameters: "start wampmysqld"; ShowCmd: hidden; Flags: waituntilterminated
-Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+Action: run; FileName: "'.$c_phpCli.'";Parameters: "-c . '.$c_installDir.'/scripts/refresh.php";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 Action: resetservices; 
 Action: readconfig;
 
