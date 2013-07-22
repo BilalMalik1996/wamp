@@ -202,8 +202,8 @@ Type: separator; Caption: "${w_phpExtensions}"
 
 [add_alias]
 ;WAMPADD_ALIASSTART
-Action: run; FileName: "${c_phpExe}";Parameters: "-c . addAlias.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+Action: run; FileName: "${c_phpExe}";Parameters: "-c . '${c_installDir}/scripts/addAlias.php'";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+Action: run; FileName: "${c_phpCli}";Parameters: "'${c_installDir}/scripts/refresh.php'";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: service; Service: wampapache; ServiceAction: restart;
 Action: resetservices
 Action: readconfig;
@@ -221,7 +221,7 @@ Type: item; Caption: "${w_startResume}"; Action: service; Service: wampapache; S
 Type: item; Caption: "${w_stopService}"; Action: service; Service: wampapache; ServiceAction: stop; Glyph: 11
 Type: item; Caption: "${w_restartService}"; Action: service; Service: wampapache; ServiceAction: restart; Glyph: 12
 Type: separator
-Type: item; Caption: "${w_testPort80}"; Action: run; FileName: "${c_phpExe}";Parameters: "-c . testPort.php";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 9
+Type: item; Caption: "${w_testPort80}"; Action: run; FileName: "${c_phpExe}";Parameters: "-c . '${c_installDir}/scripts/testPort.php'";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 9
 Type: item; Caption: "${w_installService}";  Action: multi; Actions: ApacheServiceInstall; Glyph: 8
 Type: item; Caption: "${w_removeService}"; Action: multi; Actions: ApacheServiceRemove; Glyph: 7
 ;WAMPAPACHESERVICEEND
@@ -275,7 +275,7 @@ Type: separator; Caption: "${w_apacheModules}"
 
 [ApacheServiceInstall]
 ;WAMPAPACHESERVICEINSTALLSTART
-Action: run; FileName: "${c_phpExe}";Parameters: "-c . testPortForInstall.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+Action: run; FileName: "${c_phpExe}";Parameters: "-c . '${c_installDir}/scripts/testPortForInstall.php'";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run;  FileName: "${c_apacheExe}"; Parameters: "${c_apacheServiceInstallParams}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "reg"; Parameters: "add HKLM\SYSTEM\CurrentControlSet\Services\wampapache /V Start /t REG_DWORD /d 3 /f"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
