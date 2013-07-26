@@ -53,7 +53,7 @@ ksort($langList);
 foreach($langList as $langname => $langstatus) {
 	$cleanLangName = str_replace('.lang', '', $langname);
 	if($langList[$langname] == 1)
-		$langText .= 'Type: item; Caption: "'.$cleanLangName.'"; Glyph: 13; Action: multi; Actions: lang_'.$cleanLangName.'
+		$langText .= sprintf('%-40s', 'Type: item; Caption: "'.$cleanLangName.'"; ').'Glyph: 13; Action: multi; Actions: lang_'.$cleanLangName.'
 ';
 	else
 		$langText .= 'Type: item; Caption: "'.$cleanLangName.'"; Action: multi; Actions: lang_'.$cleanLangName.'
@@ -106,10 +106,10 @@ $extText = ';WAMPPHP_EXTSTART
 ';
 foreach($ext as $extname => $extstatus) {
 	if($ext[$extname] == 1)
-		$extText .= 'Type: item; Caption: "'.$extname.'"; Glyph: 13; Action: multi; Actions: php_ext_'.$extname.'
+		$extText .= sprintf('%-50s', 'Type: item; Caption: "'.$extname.'"; ').'Glyph: 13; Action: multi; Actions: php_ext_'.$extname.'
 ';
 	else
-		$extText .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$extname.'
+		$extText .= sprintf('%-50s', 'Type: item; Caption: "'.$extname.'"; ').'           Action: multi; Actions: php_ext_'.$extname.'
 ';
 }
 foreach($ext as $extname => $extstatus) {
@@ -140,10 +140,10 @@ $phpConfText = ";WAMPPHP_PARAMSSTART
 ";
 foreach($params_for_wampini as $paramname => $paramstatus) {
 	if($params_for_wampini[$paramname] == 1)
-		$phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: 13; Action: multi; Actions: '.$phpParams[$paramname].'
+		$phpConfText .= sprintf('%-50s', 'Type: item; Caption: "'.$paramname.'"; ').'Glyph: 13; Action: multi; Actions: '.$phpParams[$paramname].'
 ';
 	else
-		$phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Action: multi; Actions: '.$phpParams[$paramname].'
+		$phpConfText .= sprintf('%-50s', 'Type: item; Caption: "'.$paramname.'"; ').'           Action: multi; Actions: '.$phpParams[$paramname].'
 ';
 }
 //$phpConfText .= 'Type: separator
@@ -178,10 +178,10 @@ $httpdText = ";WAMPAPACHE_MODSTART
 ";
 foreach($mod as $modname => $modstatus) {
 	if($mod[$modname] == 1)
-		$httpdText .= 'Type: item; Caption: "'.$modname.'"; Glyph: 13; Action: multi; Actions: apache_mod_'.$modname.'
+		$httpdText .= sprintf('%-55s', 'Type: item; Caption: "'.$modname.'"; ').'Glyph: 13; Action: multi; Actions: apache_mod_'.$modname.'
 ';
 	else
-		$httpdText .= 'Type: item; Caption: "'.$modname.'"; Action: multi; Actions: apache_mod_'.$modname.'
+		$httpdText .= sprintf('%-55s', 'Type: item; Caption: "'.$modname.'"; ').'           Action: multi; Actions: apache_mod_'.$modname.'
 ';
 }
 foreach($mod as $modname => $modstatus) {
